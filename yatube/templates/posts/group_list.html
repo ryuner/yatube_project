@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% extends 'base.html' %}
+  <head>
+    {% block title %}
+    {% endblock %}
+  </head>
+  <body>
+    <header>
+    </header>
+    <main>
+      {% block content %}
+        <div class="container py-5">
+          {{ 'text' }}
+        </div>  
+      {% endblock %}
+    </main>        
+    <footer>
+    </footer>
+  </body>
+</html>
