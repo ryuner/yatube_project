@@ -23,7 +23,10 @@
     </header>
     <main>
       {% block content %}
-        "Здесь будет информация о группах проекта Yatube"
+        {% for post in page_obj %}
+          ...Тут вывод списка записей...
+        {% endfor %}
+        {% include 'posts/includes/paginator.html' %}
       {% endblock %}
     </main>
     <footer>
