@@ -4,17 +4,17 @@ from django.utils.translation import gettext_lazy as _
 from .models import Post
 
 
-class PostForm(forms.Form):
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('text', 'group')
+        fields = ("text", "group")
         labels = {
-            'text': _('Текст поста'),
-            'group': _('Группа'),
+            "text": _("Текст поста"),
+            "group": _("Группа")
         }
         help_texts = {
-            'text': _('Текст нового поста'),
-            'group': _('Группа к которой будет относится пост')
+            "text": _("Текст поста"),
+            "group": _("Группа, к которой относится пост")
         }
         widgets = {
             "group": forms.Select(attrs={"class": "custom-select md-form"}),

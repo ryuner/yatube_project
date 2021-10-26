@@ -10,14 +10,9 @@ from .models import Group, Post
 
 def index(request):
     post_list = Post.objects.all().order_by('-pub_date')
-    paginator = Paginator(post_list, 10) 
-
-    # Из URL извлекаем номер запрошенной страницы - это значение параметра page
+    paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
-
-    # Получаем набор записей для страницы с запрошенным номером
     page_obj = paginator.get_page(page_number)
-    # Отдаем в словаре контекста
     context = {
         'page_obj': page_obj,
         'post_list': post_list
@@ -56,43 +51,44 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
-    post = get_object_or_404(Post,  pk=post_id)
-    context = {   "post" : post,
+    template = 'posts/post_detail.html'
+    post = get_object_or_404(Post, id=post_id)
+    author_posts_count = Post.objects.filter(author_id=post.author_id).count()
+    text = get_object_or_404(Post, pk=post_id)
+    posts = Post.objects.filter(pk=post_id)
+
+    context = {
+        'posts': posts,
+        'text': text,
+        'author_posts_count': author_posts_count
     }
-    return render(request, 'posts/post_detail.html', context)
+    return render(request, template, context)
 
 @login_required
 def post_create(request):
     if request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
-            group = form.cleaned_data['group']
-            text = form.cleaned_data['text']
-            return redirect('/profile/<username>/')
-    context = {   
-        'form':form
-    }
-    return render(request, 'posts/create.html', context)
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect('posts:profile', username=request.user)
+        return render(request, 'posts/create_post.html', { 'form': form })
+    form = PostForm()
+    return render(request, 'posts/create_post.html', { 'form': form })
 
-
+@login_required
 def post_edit(request, post_id):
-    post = get_object_or_404(Post,  pk=post_id)
- 
-    if post.author != request.user:
-        return redirect('posts:post_detail', post_id=post.pk)
- 
-    if request.method != 'POST':
-        post = get_object_or_404(Post,  pk=post_id)
-        form = PostForm(post=post)
-    else:
-        form = PostForm(request.Post, instance=post)
-        if form.is_valid():
-            form.save()
-            return redirect('posts:post_detail', post_id=post.pk)
- 
-    context = {
-        'form': form,
-        'is_edit': True,
-        'post': post,
-    }
-    return render(request, 'posts/create_post.html', context)
+    post = get_object_or_404(Post, id=post_id)
+    if post.author == request.user:
+        if request.method == 'POST':
+            PostForm(request.POST, instance=post).save()
+            return redirect('posts:post_detail', post_id=post_id)
+        form = PostForm(instance=post)
+        context = {
+            'form': form,
+            'post_id': post_id,
+            'is_edit': True
+        }
+        return render(request, 'posts/create_post.html', context)
+    return redirect('posts:post_detail', post_id=post_id)
